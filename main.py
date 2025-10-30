@@ -1,14 +1,25 @@
-meme_dict = {
-            "CRINGE": "Algo vergonhoso ou constrangedor",
-            "STALKEAR": "Investigar a vida de alguém online",
-            "BETA": "Pessoa que segue as regras sociais e costumam ocupar posições de apoio em vez de liderança"
-            }
+import discord
 
-word = input("Digite uma palavra moderna que você não entende (escreva todo a palavra em letras maiúsculas): ")
+intents = discord.Intents.default()
+intents.message_content = True
 
-if word in meme_dict.keys():
-    # O que devemos fazer se a palavra for encontrada?
-    print(meme_dict[word])
-else:
-    # O que devemos fazer se a palavra não for encontrada?
-    print("Palavra não foi encontrada")
+client = discord.Client(intents=intents)
+
+@client.event
+async def on_ready():
+    print(f'Você logou como {client.user}')
+
+@client.event
+async def on_message(message):
+    if message.author == client.user:
+        return
+    if message.content.startswith('$hello'):
+        await message.channel.send(f'Olá! eu sou um bot {client.user}!')
+    elif  message.content.startswith('$heh'):
+        if len(message.content) > 4:
+            count_heh = int(message.content[4:])
+        else:
+            count_heh = 5
+        await message.channel.send("he" * count_heh)
+        
+client.run("O TOKEN SECRETO FICA AQUI")
