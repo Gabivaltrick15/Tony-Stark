@@ -7,6 +7,7 @@ intents.message_content = True
 
 bot = commands.Bot(command_prefix="!", intents=intents)
 
+# Lista de curiosidades
 curiosidades = [
     "Os jovens brasileiros estão se tornando uma força significativa na conscientização sobre as mudanças climáticas.",
     "Mais de 80% dos adolescentes brasileiros demonstram preocupação com o aquecimento global e as mudanças climáticas.",
@@ -15,6 +16,7 @@ curiosidades = [
     "O Brasil está entre os países com o maior número de animais de fazenda do mundo — incluindo bois, vacas, galinhas e frangos."
 ]
 
+# Lista de dicas ecológicas
 dicas = [
     "Deixar luzes acesas, carregar dispositivos sem necessidade ou usar aparelhos em modo stand-by consome energia, muitas vezes gerada por fontes poluentes.",
     "Banhos longos, torneiras abertas e uso desnecessário de água contribuem para o consumo de energia e escassez hídrica.",
@@ -23,6 +25,7 @@ dicas = [
     "Optar por carros ou motos em vez de caminhar, pedalar ou usar transporte público aumenta a emissão de CO₂."
 ]
 
+# Lista de perguntas do quiz
 quiz_perguntas = [
     {
         "pergunta": "Qual gás é o principal responsável pelo efeito estufa?",
@@ -41,6 +44,9 @@ quiz_perguntas = [
     }
 ]
 
+# Armazena perguntas pendentes por usuário
+pergunta_atual = {}
+
 @bot.event
 async def on_ready():
     print(f"EcoBot conectado como {bot.user}!")
@@ -57,6 +63,7 @@ async def dica(ctx):
 @bot.command(name="quiz")
 async def quiz(ctx):
     pergunta = random.choice(quiz_perguntas)
+    pergunta_atual[ctx.author.id] = pergunta
     texto = f"**{pergunta['pergunta']}**\n"
     for i, alt in enumerate(pergunta["alternativas"], start=1):
         texto += f"{i}. {alt}\n"
@@ -74,4 +81,26 @@ async def ajuda(ctx):
     )
     await ctx.send(msg)
 
-bot.run("seu codigo")
+@bot.event
+async def on_message(message):
+    if message.author == bot.user:
+        return
+
+    if message.author.id in pergunta_atual:
+        try:
+            resposta = int(message.content.strip())
+            pergunta = pergunta_atual[message.author.id]
+            if resposta == pergunta["resposta"] + 1:
+                await message.channel.send("✅ Resposta correta! Você mandou bem!")
+            else:
+                correta = pergunta["alternativas"][pergunta["resposta"]]
+                await message.channel.send(f"❌ Resposta incorreta. A correta era: **{correta}**.")
+            del pergunta_atual[message.author.id]
+        except ValueError:
+            await message.channel.send("Por favor, responda com o número da alternativa (1 a 4).")
+        return
+
+    await bot.process_commands(message)
+
+# ⚠️ Substitua pelo seu token real e mantenha-o seguro
+bot.run("KEY")
