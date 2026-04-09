@@ -1,0 +1,5 @@
+0 Drible
+1 Falta 
+2 Impendimento
+3 Defesa 
+4 Desarme
